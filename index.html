@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secret Chat</title>
+    <meta charset="utf-8">
+</head>
+<body>
+
+<script type="text/javascript">
+
+    var settings = {
+        group: '',
+        lastMessage: '',
+    }
+
+    var input = document.createElement('input');
+    input.addEventListener('input', function () {
+        settings.group = this.value;
+    });
+
+    function newMessage (messageContent) {
+        if (settings.lastMessage === messageContent)
+            return false;
+
+        settings.lastMessage = messageContent;
+
+        var message = document.createElement('div');
+        message.appendChild(document.createTextNode(messageContent));
+
+        document.body.appendChild(message);
+    }
+
+    document.body.appendChild(input);
+
+    function getMessage () {
+        var oReq = new XMLHttpRequest();
+
+        oReq.onload = function () {
+            if (this.status === 404) {
+                console.log('Grupo não encontrado');
+            } else if (this.status === 200) {
+                newMessage(this.responseText);
+            }
+
+            setTimeout(getMessage, 1000);
+        };
+
+        var group = (settings.group) ? settings.group : 'default';
+        oReq.open('get', 'groups/' + group + '.group', true);
+        oReq.send();
+    }
+
+    getMessage();
+
+</script>
+
+</body>
+</html>
