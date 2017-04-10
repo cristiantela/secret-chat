@@ -6,23 +6,39 @@
 </head>
 <body>
 
+Name: 
+<input type="text" class="name" value="unknow">
+
+Group: 
+<input type="text" class="group" value="default">
+
+Message:
+<textarea class="message"></textarea>
+
 <script type="text/javascript">
 
 	var settings = {
-		group: '',
+		group: 'default',
 		message: '',
-		lastMessage: '',
+		name: 'unknow',
+		lastIdMessage: '',
 	}
 
-	var group = document.createElement('input');
+	var group = document.querySelector('.group');
+
+	var callGroup = null;
 
 	group.addEventListener('input', function () {
-		settings.group = this.value;
+		var group = this.value;
+
+		clearTimeout(callGroup);
+		callGroup = setTimeout(function () {
+			settings.group = group;
+			getMessage();
+		}, 500);
 	});
 
-	document.body.appendChild(group);
-
-	var message = document.createElement('textarea');
+	var message = document.querySelector('.message');
 
 	message.addEventListener('input', function () {
 		settings.message = this.value;
@@ -35,16 +51,30 @@
 		}
 	});
 
-	document.body.appendChild(message);
+	var nameInput = document.querySelector('.name');
+
+	nameInput.addEventListener('input', function () {
+		settings.name = this.value;
+	});
 
 	function newMessage (messageContent) {
-		if (settings.lastMessage === messageContent)
+
+		messageContent = messageContent.split('\n');
+
+		var id		= messageContent[0],
+			time 	= messageContent[1],
+			ip 		= messageContent[2],
+			name 	= messageContent[3],
+			content	= messageContent[4],
+			group 	= messageContent[5];
+
+		if (settings.lastIdMessage === id)
 			return false;
 
-		settings.lastMessage = messageContent;
+		settings.lastIdMessage = id;
 
 		var message = document.createElement('div');
-		message.appendChild(document.createTextNode(messageContent));
+		message.appendChild(document.createTextNode(content));
 
 		document.body.appendChild(message);
 	}
@@ -71,23 +101,28 @@
 		var group = (settings.group) ? settings.group : 'default';
 		oReq.open('post', 'groups/message.php', true);
 		oReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		oReq.send(`group=${settings.group}&content=${encodeURI(settings.message)}`);
+
+		var textSend 	= `group=${encodeURI(settings.group)}&`;
+			textSend   += `content=${encodeURI(settings.message)}&`;
+			textSend   += `name=${encodeURI(settings.name)}&`;
+
+		oReq.send(textSend);
 	}
 
 	function getMessage () {
 		var oReq = new XMLHttpRequest();
 
+		var group = (settings.group) ? settings.group : 'default';
+
 		oReq.onload = function () {
 			if (this.status === 404) {
-				console.log('Grupo não encontrado');
 			} else if (this.status === 200) {
-				newMessage(this.responseText);
+				newMessage(this.responseText + '\n' + group);
 			}
 
 			setTimeout(getMessage, 1000);
 		};
 
-		var group = (settings.group) ? settings.group : 'default';
 		oReq.open('get', 'groups/' + group + '.group?' + Math.random(), true);
 		oReq.send();
 	}

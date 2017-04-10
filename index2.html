@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Secret Chat</title>
+	<meta charset="utf-8">
+</head>
+<body>
+
+<div id="app">
+	Listener groups:
+	<div v-for="group in chatSettings.listenerGroups">
+		{{ group }}
+	</div>
+</div>
+
+<script src="https://unpkg.com/vue"></script>
+<script type="text/javascript">
+
+var app = new Vue({
+	el: '#app',
+
+	mounted: function (aqui) {
+		function request () {
+			console.log(this.Vue.requestList);
+			var oReq = new XMLHttpRequest();
+
+			oReq.onload = function () {
+				if (this.status === 200) {
+				}
+
+				setTimeout(request, 500);
+			};
+
+			oReq.open('get', 'url', true);
+			oReq.send();
+		};
+
+		request();
+	},
+
+	data: {
+		chatSettings: {
+			listenerGroups: ['default'],
+		},
+		requestList: [{ type: 'group-list' }],
+	},
+});
+
+</script>
+
+</body>
+</html>
