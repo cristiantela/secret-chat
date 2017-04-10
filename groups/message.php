@@ -48,6 +48,15 @@ if (file_exists($filename)) {
 
 $fileContent = array();
 
+$return = array();
+$return['id'] = $id;
+$return['time'] = time();
+$return['ip'] = $ip;
+$return['name'] = $name;
+$return['message'] = preg_replace('/\r\n/', '\n', preg_replace('/\\\/', '\\\\\\', $content));
+
+json_encode($return);
+
 $fileContent[0] = $id;
 $fileContent[1] = time();
 $fileContent[2] = $ip;
@@ -56,10 +65,12 @@ $fileContent[4] = preg_replace('/\r\n/', '\n', preg_replace('/\\\/', '\\\\\\', $
 
 $fileContent = implode("\n", $fileContent);
 
-echo $fileContent;
-
 $file = fopen($filename, 'w');
 fwrite($file, $fileContent);
 fclose($file);
+
+echo json_encode(array(
+    'success' => true
+));
 
 ?>

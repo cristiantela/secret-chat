@@ -1,56 +1,98 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Secret Chat</title>
-    <meta charset="utf-8">
+	<title>Secret Chat</title>
+	<meta charset="utf-8">
 </head>
 <body>
 
 <script type="text/javascript">
 
-    var settings = {
-        group: '',
-        lastMessage: '',
-    }
+	var settings = {
+		group: '',
+		message: '',
+		lastMessage: '',
+	}
 
-    var input = document.createElement('input');
-    input.addEventListener('input', function () {
-        settings.group = this.value;
-    });
+	var group = document.createElement('input');
 
-    function newMessage (messageContent) {
-        if (settings.lastMessage === messageContent)
-            return false;
+	group.addEventListener('input', function () {
+		settings.group = this.value;
+	});
 
-        settings.lastMessage = messageContent;
+	document.body.appendChild(group);
 
-        var message = document.createElement('div');
-        message.appendChild(document.createTextNode(messageContent));
+	var message = document.createElement('textarea');
 
-        document.body.appendChild(message);
-    }
+	message.addEventListener('input', function () {
+		settings.message = this.value;
+	});
 
-    document.body.appendChild(input);
+	message.addEventListener('keydown', function (event) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			sendMessage();
+		}
+	});
 
-    function getMessage () {
-        var oReq = new XMLHttpRequest();
+	document.body.appendChild(message);
 
-        oReq.onload = function () {
-            if (this.status === 404) {
-                console.log('Grupo não encontrado');
-            } else if (this.status === 200) {
-                newMessage(this.responseText);
-            }
+	function newMessage (messageContent) {
+		if (settings.lastMessage === messageContent)
+			return false;
 
-            setTimeout(getMessage, 1000);
-        };
+		settings.lastMessage = messageContent;
 
-        var group = (settings.group) ? settings.group : 'default';
-        oReq.open('get', 'groups/' + group + '.group', true);
-        oReq.send();
-    }
+		var message = document.createElement('div');
+		message.appendChild(document.createTextNode(messageContent));
 
-    getMessage();
+		document.body.appendChild(message);
+	}
+
+	function sendMessage () {
+		var oReq = new XMLHttpRequest();
+
+		oReq.onload = function () {
+			if (this.status === 200) {
+				var response = JSON.parse(this.responseText);
+
+				if (response.error) {
+					console.log(response.error);
+					if (/^\[3\]/.test(response.error)) {
+						setTimeout(sendMessage, 500);
+					}
+				} else if (response.success) {
+					message.value = '';
+					settings.message = '';
+				}
+			}
+		};
+
+		var group = (settings.group) ? settings.group : 'default';
+		oReq.open('post', 'groups/message.php', true);
+		oReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		oReq.send(`group=${settings.group}&content=${encodeURI(settings.message)}`);
+	}
+
+	function getMessage () {
+		var oReq = new XMLHttpRequest();
+
+		oReq.onload = function () {
+			if (this.status === 404) {
+				console.log('Grupo não encontrado');
+			} else if (this.status === 200) {
+				newMessage(this.responseText);
+			}
+
+			setTimeout(getMessage, 1000);
+		};
+
+		var group = (settings.group) ? settings.group : 'default';
+		oReq.open('get', 'groups/' + group + '.group?' + Math.random(), true);
+		oReq.send();
+	}
+
+	getMessage();
 
 </script>
 
