@@ -3,7 +3,7 @@
 $group      = isset($_POST['group'])    ? $_POST['group']   : '';
 $id         = 1;
 $ip         = $_SERVER['REMOTE_ADDR'];
-$name       = isset($_POST['content'])  ? $_POST['content'] : 'unknow';
+$name       = isset($_POST['name'])  ? $_POST['name'] : '';
 $content    = isset($_POST['content'])  ? $_POST['content'] : '';
 
 $group = strlen($group) !== 0 ? $group : 'default';
@@ -24,6 +24,10 @@ if (strlen($content) === 0) {
     exit;
 }
 
+if (strlen($name) === 0) {
+    $name = 'unknow';
+}
+
 $filename = "$group.group";
 
 if (file_exists($filename)) {
@@ -40,8 +44,6 @@ if (file_exists($filename)) {
     }
 
     $id = (int) $fileContent[0] + 1;
-
-    echo $id . '\n';
 }
 
 $fileContent = array();
@@ -49,7 +51,8 @@ $fileContent = array();
 $fileContent[0] = $id;
 $fileContent[1] = time();
 $fileContent[2] = $ip;
-$fileContent[3] = preg_replace('/\r\n/', '\n', preg_replace('/\\\/', '\\\\\\', $content));
+$fileContent[3] = $name;
+$fileContent[4] = preg_replace('/\r\n/', '\n', preg_replace('/\\\/', '\\\\\\', $content));
 
 $fileContent = implode("\n", $fileContent);
 
