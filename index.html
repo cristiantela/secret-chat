@@ -6,10 +6,10 @@
 </head>
 <body>
 
-Name: 
+Name:
 <input type="text" class="name" value="unknow">
 
-Group: 
+Group:
 <input type="text" class="group" value="default">
 
 Message:
@@ -74,7 +74,7 @@ Message:
 		settings.lastIdMessage = id;
 
 		var message = document.createElement('div');
-		message.appendChild(document.createTextNode(content));
+		message.appendChild(document.createTextNode(messageContent.join(' # ')));
 
 		document.body.appendChild(message);
 	}
